@@ -34,7 +34,7 @@
 
   - **中间拖拽分隔线**, 拖拽分隔线reactFlow的思维导图自适应，撑满屏幕，提升用户阅读体验
 
-  - **右侧vditor Markdown面板**, 使用vditor 渲染，模式是预览模式
+  - **右侧react-markdown面板**, 使用react-markdown渲染markdown内容。
     1.1 当编辑了某个章节的内容后，要点保存才会真正存储到storage
     1.2 需要监听输入内容的变化，给用户提示有内容未保存，最好就是保存按钮对于有更改的情况样式上做一点提醒
     1.3 有更新但用户没有点保存就准备切到另一个节点，那么提示用户2.预览模式，阅读内容
@@ -128,18 +128,18 @@
   ```tsx
   export interface ChapterContextType {
     // 章节树（唯一数据源）
-    chapterTree: ChapterNode;
+    chapterTree: ChapterNode
     // 后面都是计算属性
     reactflow: {
       // 计算属性：ReactFlow 节点/边
-      nodes: Node[]; // 选中状态放在 ReactFlow 节点，而不是 Chapter Tree, slected=true, 初始打开页面第一个页面的selected=true
-      edges: Edge[];
+      nodes: Node[] // 选中状态放在 ReactFlow 节点，而不是 Chapter Tree, slected=true, 初始打开页面第一个页面的selected=true
+      edges: Edge[]
       // 计算属性：DFS / BFS 顺
-      dfsOrder: string[];
-      bfsOrder: string[];
+      dfsOrder: string[]
+      bfsOrder: string[]
       // 计算属性：选中节点
-      selectedNodeId: string | null;
-    };
+      selectedNodeId: string | null
+    }
   }
   ```
 
@@ -179,27 +179,31 @@
   - 5.整个过程用户只看到平滑的“进入动画”，不会闪或跳。
 
   ```tsx
-  import { useReactFlow } from '@xyflow/react';
+  import { useReactFlow } from "@xyflow/react"
 
-  const { fitView } = useReactFlow();
+  const { fitView } = useReactFlow()
 
   // 1.fitView={false}，因为设置为true也没用，所以这里设置为false
-  <ReactFlow nodes={[]} edges={[]} fitView={false} />;
+  ;<ReactFlow nodes={[]} edges={[]} fitView={false} />
 
   // 2.加载完节点并布局后：手动调用 fitView 方法
-  setNodes(layoutedNodes);
-  requestAnimationFrame(() => fitView({ padding: 0.2, duration: 100 }));
+  setNodes(layoutedNodes)
+  requestAnimationFrame(() => fitView({ padding: 0.2, duration: 100 }))
   ```
 
 - Plasmo 存储的示例
 
   ```tsx
-  import { useStorage } from '@plasmohq/storage/hook';
+  import { useStorage } from "@plasmohq/storage/hook"
 
   function Popup() {
-    const [count, setCount] = useStorage('count', 0);
+    const [count, setCount] = useStorage("count", 0)
 
-    return <button onClick={() => setCount((c) => c + 1)}>Clicked {count} times</button>;
+    return (
+      <button onClick={() => setCount((c) => c + 1)}>
+        Clicked {count} times
+      </button>
+    )
   }
   ```
 
@@ -231,6 +235,6 @@
 - `tailwindcss`：UI 样式；
 - `@plasmohq/storage`：统一存储；
 - `markdown-it` / `remark`（Markdown AST 解析器）。
-- vditor （Markdown 编辑器， 暂时仅使用它的预览功能）
+- react-markdown
 
 ---
