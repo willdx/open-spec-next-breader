@@ -65,3 +65,7 @@ This project combines a Plasmo browser extension with a Next.js application:
 - The extension popup and Next.js app share the same Main component but with different props
 - Extension loads from `build/chrome-mv3-dev/` during development
 - TypeScript configuration extends Plasmo base with Next.js plugin support
+- 请用中文跟我交流
+- 使用pnpm
+- 不需要测试，我手动测试
+- 使用Tailwind 3版本
