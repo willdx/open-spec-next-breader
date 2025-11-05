@@ -128,18 +128,18 @@
   ```tsx
   export interface ChapterContextType {
     // 章节树（唯一数据源）
-    chapterTree: ChapterNode
+    chapterTree: ChapterNode;
     // 后面都是计算属性
     reactflow: {
       // 计算属性：ReactFlow 节点/边
-      nodes: Node[] // 选中状态放在 ReactFlow 节点，而不是 Chapter Tree, slected=true, 初始打开页面第一个页面的selected=true
-      edges: Edge[]
+      nodes: Node[]; // 选中状态放在 ReactFlow 节点，而不是 Chapter Tree, slected=true, 初始打开页面第一个页面的selected=true
+      edges: Edge[];
       // 计算属性：DFS / BFS 顺
-      dfsOrder: string[]
-      bfsOrder: string[]
+      dfsOrder: string[];
+      bfsOrder: string[];
       // 计算属性：选中节点
-      selectedNodeId: string | null
-    }
+      selectedNodeId: string | null;
+    };
   }
   ```
 
@@ -179,31 +179,27 @@
   - 5.整个过程用户只看到平滑的“进入动画”，不会闪或跳。
 
   ```tsx
-  import { useReactFlow } from "@xyflow/react"
+  import { useReactFlow } from '@xyflow/react';
 
-  const { fitView } = useReactFlow()
+  const { fitView } = useReactFlow();
 
   // 1.fitView={false}，因为设置为true也没用，所以这里设置为false
-  ;<ReactFlow nodes={[]} edges={[]} fitView={false} />
+  <ReactFlow nodes={[]} edges={[]} fitView={false} />;
 
   // 2.加载完节点并布局后：手动调用 fitView 方法
-  setNodes(layoutedNodes)
-  requestAnimationFrame(() => fitView({ padding: 0.2, duration: 100 }))
+  setNodes(layoutedNodes);
+  requestAnimationFrame(() => fitView({ padding: 0.2, duration: 100 }));
   ```
 
 - Plasmo 存储的示例
 
   ```tsx
-  import { useStorage } from "@plasmohq/storage/hook"
+  import { useStorage } from '@plasmohq/storage/hook';
 
   function Popup() {
-    const [count, setCount] = useStorage("count", 0)
+    const [count, setCount] = useStorage('count', 0);
 
-    return (
-      <button onClick={() => setCount((c) => c + 1)}>
-        Clicked {count} times
-      </button>
-    )
+    return <button onClick={() => setCount((c) => c + 1)}>Clicked {count} times</button>;
   }
   ```
 
