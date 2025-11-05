@@ -140,7 +140,7 @@ function CustomPopup() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-800 flex items-center">
           <span className="mr-2">📝</span>
-          手动输入
+          仅支持粘贴文档
         </h2>
       </div>
 
@@ -151,7 +151,7 @@ function CustomPopup() {
           value={editorContent}
           onChange={(e) => setEditorContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="请输入Markdown文档内容...&#10;&#10;提示：&#10;- 第一行以 # 开头可作为标题&#10;- 支持 Ctrl+Enter 快速保存"
+          placeholder="手动输入体验不好, 但直接粘贴没问题😁"
           className="w-full h-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
           style={{ minHeight: "200px" }}
         />
@@ -254,7 +254,7 @@ function CustomPopup() {
           onClick={handleManualInputClick}
           className="w-full bg-indigo-500 text-white rounded-lg px-4 py-3 font-medium hover:bg-indigo-600 transition-colors flex items-center justify-center">
           <span className="mr-2">✏️</span>
-          手动输入文档
+          手动输入内容
         </button>
       </div>
 
