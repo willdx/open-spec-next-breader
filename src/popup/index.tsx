@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { useDocumentStorage } from "~hooks/useDocumentStorage"
 import { documentStorage } from "~services/document-storage"
 import { webContentExtractor } from "~services/web-content-extractor"
+import { openReadingMode } from "~services/reading-service"
 
 function CustomPopup() {
   const { documentCount, lastReadDocument } = useDocumentStorage()
@@ -80,15 +81,22 @@ function CustomPopup() {
     setIsSaving(true)
     try {
       const title = extractTitle(editorContent)
-      await documentStorage.addDocument({
+      const savedDocument = await documentStorage.addDocument({
         title,
         content: editorContent,
         source: "manual"
       })
 
-      alert(`文档"${title}"保存成功！\n跳转功能待实现`)
-      setIsEditorMode(false)
-      setEditorContent("")
+      // 保存成功后打开阅读模式
+      const success = await openReadingMode(editorContent, title, savedDocument.id)
+
+      if (success) {
+        setIsEditorMode(false)
+        setEditorContent("")
+        window.close() // 关闭popup
+      } else {
+        alert(`文档"${title}"保存成功！\n打开阅读模式失败，请重试`)
+      }
     } catch (error) {
       console.error("保存文档失败:", error)
       alert("保存文档失败，请重试")
@@ -140,15 +148,28 @@ function CustomPopup() {
     }
   }
 
-  const handleLastReadClick = () => {
+  const handleLastReadClick = async () => {
     if (lastReadDocument) {
-      // 更新最后阅读时间（用户点击时重新记录）
-      updateLastReadTime(lastReadDocument.id)
+      try {
+        // 更新最后阅读时间
+        await documentStorage.updateLastReadTime(lastReadDocument.id)
 
-      // TODO: 实现跳转到主界面阅读功能
-      alert(
-        `上次阅读: ${lastReadDocument.title}\n\n内容预览:\n${lastReadDocument.content.substring(0, 100)}${lastReadDocument.content.length > 100 ? "..." : ""}\n\n跳转功能待实现`
-      )
+        // 打开阅读模式
+        const success = await openReadingMode(
+          lastReadDocument.content,
+          lastReadDocument.title,
+          lastReadDocument.id
+        )
+
+        if (success) {
+          window.close() // 关闭popup
+        } else {
+          alert("打开阅读模式失败，请重试")
+        }
+      } catch (error) {
+        console.error("打开阅读模式失败:", error)
+        alert("打开阅读模式失败，请重试")
+      }
     } else {
       alert(
         "暂无阅读记录\n\n请先在文档库中阅读任意文档后，这里将显示您的阅读历史"
@@ -186,7 +207,19 @@ function CustomPopup() {
       })
 
       console.log("💾 文档保存成功:", savedDocument)
-      alert(`成功抓取并保存文档：${extractedContent.content.substring(0, 200)}`)
+
+      // 抓取成功后打开阅读模式
+      const success = await openReadingMode(
+        extractedContent.content,
+        extractedContent.title,
+        savedDocument.id
+      )
+
+      if (success) {
+        window.close() // 关闭popup
+      } else {
+        alert(`成功抓取并保存文档：${extractedContent.title}\n打开阅读模式失败，请重试`)
+      }
     } catch (error) {
       console.error("❌ 抓取网页失败:", error)
       alert(`抓取失败：${error instanceof Error ? error.message : "未知错误"}`)

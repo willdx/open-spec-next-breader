@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { useDocumentStorage } from '~hooks/useDocumentStorage';
 import type { DocumentData } from '~types/document';
+import { openReadingMode } from '~services/reading-service';
 
 /**
  * Side Panel 文档库组件
@@ -22,6 +23,7 @@ function SidePanel() {
   const [searchResults, setSearchResults] = useState<DocumentData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isAddingTestData, setIsAddingTestData] = useState(false);
+  const [openingDocument, setOpeningDocument] = useState<string | null>(null);
 
   // 按更新时间倒序排列文档
   const sortedDocuments = useMemo(() => {
@@ -50,6 +52,35 @@ function SidePanel() {
 
   // 当前显示的文档列表
   const displayDocuments = isSearching ? searchResults : sortedDocuments;
+
+  // 处理文档点击
+  const handleDocumentClick = async (doc: DocumentData) => {
+    if (openingDocument) return;
+
+    setOpeningDocument(doc.id);
+    try {
+      // 更新最后阅读时间
+      await addDocument({
+        ...doc,
+        lastReadTime: Date.now()
+      });
+
+      // 打开阅读模式
+      const success = await openReadingMode(
+        doc.content,
+        doc.title,
+        doc.id
+      );
+
+      if (!success) {
+        console.error('打开阅读模式失败');
+      }
+    } catch (error) {
+      console.error('打开文档失败:', error);
+    } finally {
+      setOpeningDocument(null);
+    }
+  };
 
   // 添加测试数据
   const handleAddTestData = async () => {
@@ -155,16 +186,22 @@ function SidePanel() {
             {displayDocuments.map((doc) => (
               <div
                 key={doc.id}
-                className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all cursor-pointer hover:border-blue-300"
-                onClick={() => {
-                  // TODO: 实现跳转到主界面阅读功能
-                  alert(`点击了文档: ${doc.title}\n跳转功能待实现`);
-                }}
+                className={`bg-white border rounded-lg p-3 hover:shadow-md transition-all cursor-pointer hover:border-blue-300 ${
+                  openingDocument === doc.id
+                    ? 'border-blue-500 bg-blue-50 opacity-75'
+                    : 'border-gray-200'
+                }`}
+                onClick={() => handleDocumentClick(doc)}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-gray-800 flex-1 mr-2 leading-tight text-sm break-words">
-                    {doc.title}
-                  </h3>
+                  <div className="flex items-center flex-1 mr-2">
+                    {openingDocument === doc.id && (
+                      <span className="animate-pulse mr-2 text-blue-500">⏳</span>
+                    )}
+                    <h3 className="font-semibold text-gray-800 leading-tight text-sm break-words">
+                      {doc.title}
+                    </h3>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
