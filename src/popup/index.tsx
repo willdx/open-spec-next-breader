@@ -1,7 +1,7 @@
-import CustomPopup from "./custom-popup"
+import CustomPopup from './custom-popup';
 
 function IndexPopup() {
-  return <CustomPopup />
+  return <CustomPopup />;
 }
 
-export default IndexPopup
+export default IndexPopup;

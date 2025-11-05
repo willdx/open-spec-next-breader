@@ -1,21 +1,21 @@
-import "~style.css"
+import '~style.css';
 
 function CustomPopup() {
   const handleDocumentCountClick = () => {
-    alert("文档库功能待实现")
-  }
+    alert('文档库功能待实现');
+  };
 
   const handleLastReadClick = () => {
-    alert("跳转至阅读界面功能待实现")
-  }
+    alert('跳转至阅读界面功能待实现');
+  };
 
   const handleExtractWebClick = () => {
-    alert("抓取网页内容功能待实现")
-  }
+    alert('抓取网页内容功能待实现');
+  };
 
   const handleManualInputClick = () => {
-    alert("手动输入功能待实现")
-  }
+    alert('手动输入功能待实现');
+  };
 
   return (
     <div className="w-80 bg-white rounded-lg shadow-lg p-4">
@@ -78,12 +78,10 @@ function CustomPopup() {
 
       {/* Footer */}
       <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-500 text-center">
-          v0.0.1 • 让阅读更高效
-        </p>
+        <p className="text-xs text-gray-500 text-center">v0.0.1 • 让阅读更高效</p>
       </div>
     </div>
-  )
+  );
 }
 
-export default CustomPopup
+export default CustomPopup;

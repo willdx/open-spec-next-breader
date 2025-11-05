@@ -1,17 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react"
+import { useState } from 'react';
 
-export function Main({ name = "Extension" }) {
-  const [data, setData] = useState("")
+export function Main({ name = 'Extension' }) {
+  const [data, setData] = useState('');
 
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: 16
-      }}>
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 16,
+      }}
+    >
       <h1>
         Welcome to your <a href="https://www.plasmo.com">Plasmo</a> {name}!
       </h1>
@@ -19,5 +20,5 @@ export function Main({ name = "Extension" }) {
 
       <a href="https://docs.plasmo.com">READ THE DOCS!</a>
     </div>
-  )
+  );
 }
