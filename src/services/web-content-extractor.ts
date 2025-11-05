@@ -1,0 +1,293 @@
+import { Readability } from '@mozilla/readability'
+import TurndownService from 'turndown'
+
+export interface ExtractedContent {
+  title: string    // 从 Markdown 正文中提取的标题
+  content: string  // Markdown 正文内容
+  url: string     // 来源 URL
+}
+
+/**
+ * 从 Markdown 内容中提取标题
+ */
+function extractTitleFromMarkdown(markdown: string): string {
+  const lines = markdown.split('\n')
+
+  // 查找第一个 # 标题
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    if (trimmedLine.startsWith('# ')) {
+      return trimmedLine.substring(2).trim()
+    }
+  }
+
+  // 如果没有 # 标题，查找第一个 ## 标题
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    if (trimmedLine.startsWith('## ')) {
+      return trimmedLine.substring(3).trim()
+    }
+  }
+
+  // 如果都没有，使用第一行非空内容作为标题
+  for (const line of lines) {
+    const trimmedLine = line.trim()
+    if (trimmedLine && !trimmedLine.startsWith('!') && !trimmedLine.startsWith('>')) {
+      // 限制标题长度
+      return trimmedLine.length > 50 ? trimmedLine.substring(0, 50) + '...' : trimmedLine
+    }
+  }
+
+  return '无标题文档'
+}
+
+export class WebContentExtractor {
+  private turndownService: TurndownService
+
+  constructor() {
+    this.turndownService = new TurndownService({
+      headingStyle: 'atx',
+      hr: '---',
+      bulletListMarker: '-',
+      codeBlockStyle: 'fenced',
+      fence: '```',
+      emDelimiter: '_',
+      strongDelimiter: '**',
+      linkStyle: 'inlined'
+    })
+
+    this.setupCustomRules()
+  }
+
+  private setupCustomRules() {
+    // 移除脚本、样式、广告等无关元素
+    this.turndownService.addRule('remove-elements', {
+      filter: ['script', 'style', 'noscript', 'iframe', 'ins', 'ads'],
+      replacement: () => ''
+    })
+
+    // 处理图片
+    this.turndownService.addRule('images', {
+      filter: 'img',
+      replacement: (content, node) => {
+        const img = node as HTMLImageElement
+        const alt = img.alt || ''
+        const src = img.src || ''
+        return alt ? `![${alt}](${src})` : `![](${src})`
+      }
+    })
+
+    // 处理代码块
+    this.turndownService.addRule('code-blocks', {
+      filter: (node) => node.nodeName === 'PRE' && node.querySelector('code'),
+      replacement: (content, node) => {
+        const pre = node as HTMLElement
+        const code = pre.querySelector('code')
+        const className = code?.className || pre.className
+        const lang = className?.replace('language-', '') || ''
+        return `\n\n\`\`\`${lang}\n${content.replace(/^\n+|\n+$/g, '')}\n\`\`\`\n\n`
+      }
+    })
+
+    // 处理表格
+    this.turndownService.addRule('tables', {
+      filter: 'table',
+      replacement: (content, node) => {
+        const table = node as HTMLTableElement
+        const rows = Array.from(table.querySelectorAll('tr'))
+        if (rows.length === 0) return ''
+
+        let markdown = '\n\n'
+        rows.forEach((row, index) => {
+          const cells = Array.from(row.querySelectorAll('td, th'))
+          const rowData = cells.map(cell => {
+            const text = cell.textContent?.trim() || ''
+            return text.replace(/\|/g, '\\|')
+          })
+          markdown += `| ${rowData.join(' | ')} |\n`
+
+          if (index === 0 && row.querySelector('th')) {
+            const separator = cells.map(() => '---').join(' | ')
+            markdown += `| ${separator} |\n`
+          }
+        })
+        return markdown + '\n'
+      }
+    })
+  }
+
+  /**
+   * 检查是否为 GitHub 项目页面
+   */
+  private isGitHubProjectPage(url: string): boolean {
+    try {
+      const urlObj = new URL(url)
+      return (
+        urlObj.hostname.includes('github.com') &&
+        urlObj.pathname.includes('/') &&
+        !urlObj.pathname.includes('/issues/') &&
+        !urlObj.pathname.includes('/pull/') &&
+        !urlObj.pathname.includes('/discussions/')
+      )
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 从 GitHub 页面提取 README 内容
+   */
+  private extractGitHubReadme(doc: Document): string | null {
+    try {
+      console.log('🐙 检测到 GitHub 页面，尝试提取 README...')
+
+      // GitHub README 通常在以下选择器中
+      const readmeSelectors = [
+        'article[itemprop="text"]',
+        '.markdown-body',
+        '#readme .Box-body',
+        '[data-target="readme-toc.content"]'
+      ]
+
+      for (const selector of readmeSelectors) {
+        const readmeElement = doc.querySelector(selector)
+        if (readmeElement && readmeElement.textContent && readmeElement.textContent.trim().length > 100) {
+          const markdown = this.turndownService.turndown(readmeElement as HTMLElement)
+          console.log(`✅ GitHub README 找到，使用选择器: ${selector}`)
+          console.log(`📄 README 原始文本长度: ${readmeElement.textContent.length}`)
+          console.log(`📝 README Markdown 长度: ${markdown.length}`)
+          return markdown
+        }
+      }
+
+      console.log('❌ GitHub README 未找到，回退到 Readability.js')
+      return null
+    } catch (error) {
+      console.error('❌ GitHub README 提取失败:', error)
+      return null
+    }
+  }
+
+  /**
+   * 从 HTML 内容中提取正文并转换为 Markdown
+   */
+  async extractFromHTML(html: string, url: string): Promise<ExtractedContent | null> {
+    try {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
+
+      let contentMarkdown = ''
+      let title = ''
+
+      // GitHub 页面特殊处理
+      if (this.isGitHubProjectPage(url)) {
+        const githubReadme = this.extractGitHubReadme(doc)
+        if (githubReadme) {
+          contentMarkdown = githubReadme
+          console.log(`🐙 使用 GitHub README`)
+        }
+      }
+
+      // 如果不是 GitHub 或 GitHub README 提取失败，使用 Readability
+      if (!contentMarkdown) {
+        console.log('📖 使用 Readability.js 提取内容...')
+
+        const readability = new Readability(doc, {
+          debug: false,
+          maxElemsToParse: 0,
+          nbTopCandidates: 5,
+          charThreshold: 500,
+          classesToPreserve: ['caption', 'MathJax', 'mathjax'],
+          keepClasses: false
+        })
+
+        const article = readability.parse()
+
+        if (!article) {
+          throw new Error('Readability 未能提取到有效内容')
+        }
+
+        contentMarkdown = this.turndownService.turndown(article.content)
+      }
+
+      // 从 Markdown 内容中提取标题
+      title = extractTitleFromMarkdown(contentMarkdown)
+
+      console.log('=== 抓取结果 ===')
+      console.log('提取的标题:', title)
+      console.log('URL:', url)
+      console.log('Markdown 内容长度:', contentMarkdown.length)
+      console.log('Markdown 内容预览:', contentMarkdown.substring(0, 500) + (contentMarkdown.length > 500 ? '...' : ''))
+      console.log('================')
+
+      return {
+        title,
+        content: contentMarkdown,
+        url
+      }
+    } catch (error) {
+      console.error('网页内容提取失败:', error)
+      throw new Error(`提取失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
+  }
+
+  /**
+   * 从当前标签页抓取内容
+   */
+  async extractFromCurrentTab(): Promise<ExtractedContent | null> {
+    try {
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
+      })
+
+      if (!tab.url) {
+        throw new Error('无法获取当前页面URL')
+      }
+
+      if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+        throw new Error('不支持抓取浏览器内部页面')
+      }
+
+      if (tab.url.startsWith('file://')) {
+        throw new Error('不支持抓取本地文件')
+      }
+
+      if (!tab.id) {
+        throw new Error('无法获取标签页ID')
+      }
+
+      // 定义要注入的函数
+      const getPageHTML = () => {
+        return document.documentElement.outerHTML
+      }
+
+      console.log('开始执行脚本注入，标签页ID:', tab.id)
+
+      const results = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: getPageHTML
+      })
+
+      console.log('脚本执行结果:', results)
+
+      if (!results || !results[0] || !results[0].result) {
+        console.error('脚本执行失败，详细信息:', {
+          hasResults: !!results,
+          resultsLength: results?.length,
+          firstResult: results?.[0],
+          hasResult: !!results?.[0]?.result
+        })
+        throw new Error('无法获取页面内容')
+      }
+
+      const html = results[0].result
+      return await this.extractFromHTML(html, tab.url)
+    } catch (error) {
+      console.error('抓取当前标签页失败:', error)
+      throw error
+    }
+  }
+}
+
+export const webContentExtractor = new WebContentExtractor()
