@@ -39,6 +39,26 @@ function CustomPopup() {
     return title || "无标题文档"
   }
 
+  // 格式化阅读时间显示
+  const formatReadTime = (timestamp?: number): string => {
+    if (!timestamp) return ""
+
+    const now = Date.now()
+    const diffMs = now - timestamp
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffDays > 0) {
+      return `${diffDays}天前`
+    } else if (diffHours > 0) {
+      return `${diffHours}小时前`
+    } else if (diffMs > 60000) {
+      return `${Math.floor(diffMs / 60000)}分钟前`
+    } else {
+      return "刚刚"
+    }
+  }
+
   // 打开编辑器
   const handleManualInputClick = () => {
     setIsEditorMode(true)
@@ -121,10 +141,13 @@ function CustomPopup() {
 
   const handleLastReadClick = () => {
     if (lastReadDocument) {
+      // 更新最后阅读时间（用户点击时重新记录）
+      updateLastReadTime(lastReadDocument.id)
+
       // TODO: 实现跳转到主界面阅读功能
-      alert(`点击了上次阅读: ${lastReadDocument.title}\n跳转功能待实现`)
+      alert(`上次阅读: ${lastReadDocument.title}\n\n内容预览:\n${lastReadDocument.content.substring(0, 100)}${lastReadDocument.content.length > 100 ? '...' : ''}\n\n跳转功能待实现`)
     } else {
-      alert("暂无阅读记录，请先添加文档")
+      alert("暂无阅读记录\n\n请先在文档库中阅读任意文档后，这里将显示您的阅读历史")
     }
   }
 
@@ -232,10 +255,21 @@ function CustomPopup() {
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
             <span className="text-white text-sm font-bold">📖</span>
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-medium text-gray-800">上次阅读</p>
-            <p className="text-xs text-gray-600">
-              {lastReadDocument ? lastReadDocument.title : "暂无阅读记录"}
+            <p className="text-xs text-gray-600 truncate">
+              {lastReadDocument ? (
+                <>
+                  {lastReadDocument.title}
+                  {lastReadDocument.lastReadTime && (
+                    <span className="ml-1 text-green-600">
+                      • {formatReadTime(lastReadDocument.lastReadTime)}
+                    </span>
+                  )}
+                </>
+              ) : (
+                "暂无阅读记录"
+              )}
             </p>
           </div>
         </div>
@@ -254,7 +288,7 @@ function CustomPopup() {
           onClick={handleManualInputClick}
           className="w-full bg-indigo-500 text-white rounded-lg px-4 py-3 font-medium hover:bg-indigo-600 transition-colors flex items-center justify-center">
           <span className="mr-2">✏️</span>
-          手动输入内容
+          手动粘贴内容
         </button>
       </div>
 
