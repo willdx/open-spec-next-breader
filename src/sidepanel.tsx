@@ -1,9 +1,9 @@
-import "~style.css"
+import '~style.css';
 
-import { useMemo, useState } from "react"
+import { useMemo, useState } from 'react';
 
-import { useDocumentStorage } from "~hooks/useDocumentStorage"
-import type { DocumentData } from "~types/document"
+import { useDocumentStorage } from '~hooks/useDocumentStorage';
+import type { DocumentData } from '~types/document';
 
 /**
  * Side Panel 文档库组件
@@ -15,86 +15,86 @@ function SidePanel() {
     deleteDocument,
     clearAllDocuments,
     searchDocuments,
-    addDocument
-  } = useDocumentStorage()
+    addDocument,
+  } = useDocumentStorage();
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<DocumentData[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [isAddingTestData, setIsAddingTestData] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<DocumentData[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAddingTestData, setIsAddingTestData] = useState(false);
 
   // 按更新时间倒序排列文档
   const sortedDocuments = useMemo(() => {
-    return [...documents].sort((a, b) => b.updatedAt - a.updatedAt)
-  }, [documents])
+    return [...documents].sort((a, b) => b.updatedAt - a.updatedAt);
+  }, [documents]);
 
   // 处理搜索
   const handleSearch = async (query: string) => {
-    setSearchQuery(query)
+    setSearchQuery(query);
 
     if (!query.trim()) {
-      setSearchResults([])
-      setIsSearching(false)
-      return
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
     }
 
-    setIsSearching(true)
+    setIsSearching(true);
     try {
-      const results = await searchDocuments(query)
-      setSearchResults(results)
+      const results = await searchDocuments(query);
+      setSearchResults(results);
     } catch (error) {
-      console.error("搜索失败:", error)
-      setSearchResults([])
+      console.error('搜索失败:', error);
+      setSearchResults([]);
     }
-  }
+  };
 
   // 当前显示的文档列表
-  const displayDocuments = isSearching ? searchResults : sortedDocuments
+  const displayDocuments = isSearching ? searchResults : sortedDocuments;
 
   // 添加测试数据
   const handleAddTestData = async () => {
-    if (isAddingTestData) return
+    if (isAddingTestData) return;
 
-    setIsAddingTestData(true)
+    setIsAddingTestData(true);
     try {
       const testData = [
         {
-          title: "Side Panel 测试文档1",
+          title: 'Side Panel 测试文档1',
           content:
-            "# Side Panel 测试文档1\n\n这是通过Side Panel添加的第一条测试文档。\n\n## 功能验证\n\n- ✅ Storage写入功能\n- ✅ 数据显示功能\n- ✅ 响应式更新",
-          source: "manual" as const
+            '# Side Panel 测试文档1\n\n这是通过Side Panel添加的第一条测试文档。\n\n## 功能验证\n\n- ✅ Storage写入功能\n- ✅ 数据显示功能\n- ✅ 响应式更新',
+          source: 'manual' as const,
         },
         {
-          title: "网页抓取测试文档",
+          title: '网页抓取测试文档',
           content:
-            "# 网页抓取测试文档\n\n这是一条模拟网页抓取的测试文档。\n\n## 测试内容\n\n- 原始网页：https://example.com\n- 抓取时间：" +
+            '# 网页抓取测试文档\n\n这是一条模拟网页抓取的测试文档。\n\n## 测试内容\n\n- 原始网页：https://example.com\n- 抓取时间：' +
             new Date().toLocaleString() +
-            "\n- 处理状态：已完成",
-          source: "web" as const,
-          sourceUrl: "https://example.com"
+            '\n- 处理状态：已完成',
+          source: 'web' as const,
+          sourceUrl: 'https://example.com',
         },
         {
-          title: "Markdown 语法测试",
+          title: 'Markdown 语法测试',
           content:
             '# Markdown 语法测试\n\n这是一个用于测试Markdown渲染的文档。\n\n## 文本格式\n\n**粗体文本** 和 *斜体文本*\n\n## 列表测试\n\n- 项目1\n- 项目2\n  - 子项目2.1\n  - 子项目2.2\n\n## 代码测试\n\n```javascript\nconsole.log("Hello Side Panel!");\n```\n\n## 链接测试\n\n[GitHub](https://github.com)',
-          source: "manual" as const
-        }
-      ]
+          source: 'manual' as const,
+        },
+      ];
 
       // 依次添加测试数据
       for (const doc of testData) {
-        await addDocument(doc)
+        await addDocument(doc);
         // 稍微延迟，避免快速连续操作
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
-      console.log("测试数据添加完成，共添加了", testData.length, "个文档")
+      console.log('测试数据添加完成，共添加了', testData.length, '个文档');
     } catch (error) {
-      console.error("添加测试数据失败:", error)
+      console.error('添加测试数据失败:', error);
     } finally {
-      setIsAddingTestData(false)
+      setIsAddingTestData(false);
     }
-  }
+  };
 
   return (
     <div className="min-w-64 w-full h-screen bg-gray-50 flex flex-col">
@@ -102,9 +102,7 @@ function SidePanel() {
       <header className="bg-white border-b border-gray-200 p-3 flex-shrink-0">
         <h1 className="text-base font-bold text-gray-800">文档库</h1>
         {isSearching && (
-          <p className="text-xs text-gray-500 mt-1">
-            搜索结果: {searchResults.length} 个文档
-          </p>
+          <p className="text-xs text-gray-500 mt-1">搜索结果: {searchResults.length} 个文档</p>
         )}
       </header>
 
@@ -120,9 +118,10 @@ function SidePanel() {
           />
           {searchQuery && (
             <button
-              onClick={() => handleSearch("")}
+              onClick={() => handleSearch('')}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              title="清空搜索">
+              title="清空搜索"
+            >
               ✕
             </button>
           )}
@@ -138,9 +137,7 @@ function SidePanel() {
               {isSearching ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-yellow-800">🔍 无搜索结果</p>
-                  <p className="text-sm text-yellow-600 mt-2">
-                    没有找到匹配"{searchQuery}"的文档
-                  </p>
+                  <p className="text-sm text-yellow-600 mt-2">没有找到匹配"{searchQuery}"的文档</p>
                 </div>
               ) : (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -161,21 +158,23 @@ function SidePanel() {
                 className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all cursor-pointer hover:border-blue-300"
                 onClick={() => {
                   // TODO: 实现跳转到主界面阅读功能
-                  alert(`点击了文档: ${doc.title}\n跳转功能待实现`)
-                }}>
+                  alert(`点击了文档: ${doc.title}\n跳转功能待实现`);
+                }}
+              >
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-gray-800 flex-1 mr-2 leading-tight text-sm break-words">
                     {doc.title}
                   </h3>
                   <button
                     onClick={(e) => {
-                      e.stopPropagation()
+                      e.stopPropagation();
                       if (confirm(`确定要删除文档"${doc.title}"吗？`)) {
-                        deleteDocument(doc.id)
+                        deleteDocument(doc.id);
                       }
                     }}
                     className="text-red-500 hover:text-red-700 text-xs leading-none p-1 hover:bg-red-50 rounded flex-shrink-0"
-                    title="删除文档">
+                    title="删除文档"
+                  >
                     ✕
                   </button>
                 </div>
@@ -184,14 +183,14 @@ function SidePanel() {
                 </p>
                 <div className="flex flex-col gap-1 text-xs text-gray-500">
                   <span className="flex items-center">
-                    🕒{" "}
+                    🕒{' '}
                     {doc.lastReadTime
                       ? `最后阅读: ${new Date(doc.lastReadTime).toLocaleDateString()}`
                       : `创建于: ${new Date(doc.createdAt).toLocaleDateString()}`}
                   </span>
                   {doc.source && (
                     <span className="inline-flex items-center px-2 py-1 bg-gray-100 rounded text-xs">
-                      {doc.source === "manual" ? "✏️ 手动" : "🌐 网页"}
+                      {doc.source === 'manual' ? '✏️ 手动' : '🌐 网页'}
                     </span>
                   )}
                 </div>
@@ -226,14 +225,15 @@ function SidePanel() {
             {documents.length > 0 && (
               <button
                 onClick={() => {
-                  if (confirm("确定要清空所有文档吗？此操作不可恢复！")) {
-                    clearAllDocuments()
-                    setSearchQuery("")
-                    setSearchResults([])
-                    setIsSearching(false)
+                  if (confirm('确定要清空所有文档吗？此操作不可恢复！')) {
+                    clearAllDocuments();
+                    setSearchQuery('');
+                    setSearchResults([]);
+                    setIsSearching(false);
                   }
                 }}
-                className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
+                className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors"
+              >
                 清空所有
               </button>
             )}
@@ -241,7 +241,7 @@ function SidePanel() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
-export default SidePanel
+export default SidePanel;
