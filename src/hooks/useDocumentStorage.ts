@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useStorage } from '@plasmohq/storage/hook';
 
@@ -12,6 +12,22 @@ import type { CreateDocumentInput, DocumentData, UpdateDocumentInput } from '~ty
 export const useDocumentStorage = () => {
   // 响应式的文档列表数据
   const [documents, setDocuments] = useStorage<DocumentData[]>(STORAGE_KEYS.DOCUMENTS, []);
+
+  // 初始化时加载现有数据
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const existingDocs = await documentStorage.getDocuments();
+        if (existingDocs.length > 0 && documents.length === 0) {
+          setDocuments(existingDocs);
+        }
+      } catch (error) {
+        console.error('加载初始文档数据失败:', error);
+      }
+    };
+
+    loadInitialData();
+  }, [documents.length]); // 只在初始加载时执行一次
 
   /**
    * 添加新文档
