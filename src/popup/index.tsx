@@ -1,7 +1,7 @@
-import { Main } from "~components/main"
+import CustomPopup from "./custom-popup"
 
 function IndexPopup() {
-  return <Main />
+  return <CustomPopup />
 }
 
 export default IndexPopup
