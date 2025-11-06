@@ -3,6 +3,8 @@
 import type { PlasmoCSConfig } from "plasmo"
 import { useEffect, useState } from "react"
 
+import { Save, Edit3, Eye, X } from "lucide-react"
+
 import DraggableDivider from "~components/DraggableDivider"
 import MarkdownEditor from "~components/MarkdownEditor"
 import MarkdownRenderer from "~components/MarkdownRenderer"
@@ -28,6 +30,7 @@ export const getStyle = () => {
       display: flex !important;
       flex-direction: column !important;
       background: white !important;
+      overflow: hidden !important; /* 防止整个页面出现滚动条 */
     }
 
     .reading-content-wrapper {
@@ -37,6 +40,7 @@ export const getStyle = () => {
       display: flex !important;
       align-items: stretch !important;
       justify-content: stretch !important;
+      overflow: hidden !important; /* 防止wrapper出现滚动条 */
     }
 
     .reading-content-box {
@@ -47,7 +51,7 @@ export const getStyle = () => {
       border-radius: 0 !important;
       display: flex !important;
       flex-direction: column !important;
-      overflow: hidden !important;
+      overflow: hidden !important; /* 防止box出现滚动条 */
     }
 
     /* 双列布局样式 - 支持动态列宽，充满屏幕 */
@@ -58,6 +62,7 @@ export const getStyle = () => {
       height: 100% !important;
       min-height: 0 !important; /* 允许子元素收缩 */
       padding: 0 !important;
+      overflow: hidden !important; /* 防止网格布局出现滚动条 */
     }
 
     /* 左侧思维导图面板 */
@@ -101,10 +106,52 @@ export const getStyle = () => {
     .reading-content-area {
       flex: 1 !important;
       overflow-y: auto !important;
+      overflow-x: hidden !important; /* 防止水平滚动条 */
       padding: 1.5rem !important;
       font-family: ui-sans-serif, system-ui, sans-serif !important;
       line-height: 1.6 !important;
       color: #1f2937 !important;
+      /* 优化滚动条样式 */
+      scrollbar-width: thin;
+      scrollbar-color: #e5e7eb transparent;
+    }
+
+    /* Webkit 滚动条样式优化 */
+    .reading-content-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .reading-content-area::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .reading-content-area::-webkit-scrollbar-thumb {
+      background-color: #e5e7eb;
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+
+    .reading-content-area::-webkit-scrollbar-thumb:hover {
+      background-color: #d1d5db;
+    }
+
+    /* Textarea 滚动条样式 */
+    .reading-content-area textarea::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .reading-content-area textarea::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .reading-content-area textarea::-webkit-scrollbar-thumb {
+      background-color: #e5e7eb;
+      border-radius: 3px;
+      transition: background-color 0.2s ease;
+    }
+
+    .reading-content-area textarea::-webkit-scrollbar-thumb:hover {
+      background-color: #d1d5db;
     }
 
     .reading-content-area h1 {
@@ -131,20 +178,7 @@ export const getStyle = () => {
       background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899) !important;
     }
 
-    .close-button {
-      padding: 0.5rem 1rem !important;
-      background: #ef4444 !important;
-      color: white !important;
-      border: none !important;
-      border-radius: 0.375rem !important;
-      cursor: pointer !important;
-      font-weight: 500 !important;
-    }
-
-    .close-button:hover {
-      background: #dc2626 !important;
-    }
-
+    
     /* 响应式设计 - 小屏幕切换为单列布局 */
     @media (max-width: 1200px) {
       .reading-two-column-layout {
@@ -315,38 +349,113 @@ export default function ReadingOverlayContent() {
 
   return (
     <div className="reading-overlay-container" onClick={handleClose}>
-      {/* 内容层 */}
-      <div className="reading-content-wrapper">
+      {/* 内容层 - 点击事件不冒泡到外层 */}
+      <div className="reading-content-wrapper" onClick={(e) => e.stopPropagation()}>
         <div className="reading-content-box">
-          {/* 工具栏 - 绝对定位在右上角 */}
+          {/* 左上角关闭按钮 */}
+          <button
+            onClick={handleClose}
+            style={{
+              position: "absolute",
+              top: "1rem",
+              left: "1rem",
+              zIndex: 10,
+              background: "transparent",
+              color: "#9ca3af",
+              border: "none",
+              borderRadius: "50%",
+              width: "2.5rem",
+              height: "2.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+              transition: "all 0.2s ease"
+            }}
+            title="关闭"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#6b7280";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#9ca3af";
+            }}>
+            <X size={20} />
+          </button>
+
+          {/* 右上角工具组 */}
           <div
             style={{
               position: "absolute",
               top: "1rem",
               right: "1rem",
               zIndex: 10,
+              background: "#f9fafb",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.75rem",
+              padding: "0.25rem",
               display: "flex",
-              gap: "0.5rem"
+              gap: "0.25rem",
+              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)"
             }}>
             {isEditMode && (
               <button
-                className="close-button"
                 onClick={handleSave}
-                style={{ background: "#10b981" }}>
-                保存
+                style={{
+                  background: "transparent",
+                  color: "#9ca3af",
+                  border: "none",
+                  borderRadius: "0.5rem",
+                  width: "2rem",
+                  height: "2rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease"
+                }}
+                title="保存"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#6b7280";
+                  e.currentTarget.style.background = "#f3f4f6";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#9ca3af";
+                  e.currentTarget.style.background = "transparent";
+                }}>
+                <Save size={16} />
               </button>
             )}
             <button
-              className="close-button"
               onClick={toggleEditMode}
-              style={{ background: "#3b82f6" }}>
-              {isEditMode ? "预览" : "编辑"}
-            </button>
-            <button
-              className="close-button"
-              onClick={handleClose}
-              style={{ background: "#ef4444" }}>
-              关闭
+              style={{
+                background: "transparent",
+                color: "#9ca3af",
+                border: "none",
+                borderRadius: "0.5rem",
+                width: "2rem",
+                height: "2rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: "0.875rem",
+                fontWeight: "500",
+                transition: "all 0.2s ease"
+              }}
+              title={isEditMode ? "预览" : "编辑"}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#6b7280";
+                e.currentTarget.style.background = "#f3f4f6";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#9ca3af";
+                e.currentTarget.style.background = "transparent";
+              }}>
+              {isEditMode ? <Eye size={16} /> : <Edit3 size={16} />}
             </button>
           </div>
 
@@ -404,7 +513,11 @@ export default function ReadingOverlayContent() {
                       fontFamily: "ui-sans-serif, system-ui, sans-serif",
                       lineHeight: 1.6,
                       fontSize: "1rem",
-                      background: "transparent"
+                      background: "transparent",
+                      overflowY: "auto",
+                      overflowX: "hidden",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#e5e7eb transparent"
                     }}
                     placeholder="在这里输入内容..."
                   />
