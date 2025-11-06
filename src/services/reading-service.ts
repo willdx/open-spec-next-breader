@@ -82,7 +82,7 @@ export async function openReadingModeLegacy(content: string, title?: string, id?
  */
 export async function saveDocumentToStorage(id: string, content: string) {
   try {
-    const documents = await storage.get('documents') || [];
+    const documents = (await storage.get('documents') || []) as any[];
     const documentIndex = documents.findIndex((doc: any) => doc.id === id);
 
     if (documentIndex !== -1) {
@@ -109,7 +109,7 @@ export async function saveDocumentToStorage(id: string, content: string) {
  */
 export async function createDocumentInStorage(content: string, title: string) {
   try {
-    const documents = await storage.get('documents') || [];
+    const documents = (await storage.get('documents') || []) as any[];
     const newDocument = {
       id: Date.now().toString(),
       title,
@@ -140,7 +140,7 @@ export async function createDocumentInStorage(content: string, title: string) {
  */
 export async function getDocumentFromStorage(id: string) {
   try {
-    const documents = await storage.get('documents') || [];
+    const documents = (await storage.get('documents') || []) as any[];
     const document = documents.find((doc: any) => doc.id === id);
 
     if (document) {
