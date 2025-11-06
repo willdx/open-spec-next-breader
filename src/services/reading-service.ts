@@ -1,4 +1,5 @@
 import { Storage } from "@plasmohq/storage";
+import { openReadingMode as sendOpenReadingMode } from "~messaging/reading-messages";
 
 const storage = new Storage();
 
@@ -22,9 +23,33 @@ export interface CreateDocumentMessage {
 }
 
 /**
- * 打开阅读界面
+ * 打开阅读界面 - 使用新的消息系统
  */
 export async function openReadingMode(content: string, title?: string, id?: string) {
+  try {
+    // 使用统一的消息接口
+    const response = await sendOpenReadingMode({
+      content,
+      title: title || '无标题文档',
+      id
+    });
+
+    if (!response.success) {
+      console.error('打开阅读模式失败:', response.error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('打开阅读模式失败:', error);
+    return false;
+  }
+}
+
+/**
+ * 兼容性方法 - 直接使用 Chrome 消息 API（用于 fallback）
+ */
+export async function openReadingModeLegacy(content: string, title?: string, id?: string) {
   try {
     // 获取当前活动标签页
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -48,32 +73,7 @@ export async function openReadingMode(content: string, title?: string, id?: stri
     return true;
   } catch (error) {
     console.error('打开阅读模式失败:', error);
-
-    // 如果content script未加载，尝试注入
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: (await chrome.tabs.query({ active: true, currentWindow: true }))[0].id! },
-        files: ['contents/reading-content.js']
-      });
-
-      // 重试发送消息
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const retryResponse = await chrome.tabs.sendMessage(tab.id!, {
-        action: 'openReading',
-        content,
-        title: title || '无标题文档',
-        id
-      } as ReadingMessage);
-
-      if (!retryResponse?.success) {
-        throw new Error('重试打开阅读模式失败');
-      }
-
-      return true;
-    } catch (retryError) {
-      console.error('重试打开阅读模式失败:', retryError);
-      return false;
-    }
+    return false;
   }
 }
 

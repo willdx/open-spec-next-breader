@@ -22,6 +22,18 @@ export function ReadingOverlay() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [content, setContent] = useState('');
 
+  // 确保样式被加载
+  useEffect(() => {
+    // 检查是否已经加载了样式
+    if (!document.querySelector('#plasmo-reading-styles')) {
+      const link = document.createElement('link');
+      link.id = 'plasmo-reading-styles';
+      link.rel = 'stylesheet';
+      link.href = chrome.runtime.getURL('reading-content.20c754ad.css');
+      document.head.appendChild(link);
+    }
+  }, []);
+
   useEffect(() => {
     // 监听来自popup的消息
     const handleMessage = (request: any, sender: any, sendResponse: any) => {
