@@ -135,11 +135,11 @@ export class WebContentExtractor {
   }
 
   /**
-   * 从 GitHub 页面提取 README 内容
+   * 直接提取 GitHub 页面的 README 内容
    */
   private extractGitHubReadme(doc: Document): string | null {
     try {
-      console.log('🐙 检测到 GitHub 页面，尝试提取 README...')
+      console.log('🐙 检测到 GitHub 页面，直接提取 README 内容...')
 
       // GitHub README 通常在以下选择器中
       const readmeSelectors = [
@@ -152,15 +152,17 @@ export class WebContentExtractor {
       for (const selector of readmeSelectors) {
         const readmeElement = doc.querySelector(selector)
         if (readmeElement && readmeElement.textContent && readmeElement.textContent.trim().length > 100) {
-          const markdown = this.turndownService.turndown(readmeElement as HTMLElement)
-          console.log(`✅ GitHub README 找到，使用选择器: ${selector}`)
+          console.log(`✅ GitHub README 区域找到，选择器: ${selector}`)
           console.log(`📄 README 原始文本长度: ${readmeElement.textContent.length}`)
+
+          // 直接转换为 Markdown
+          const markdown = this.turndownService.turndown(readmeElement as HTMLElement)
           console.log(`📝 README Markdown 长度: ${markdown.length}`)
           return markdown
         }
       }
 
-      console.log('❌ GitHub README 未找到，回退到 Readability.js')
+      console.log('❌ GitHub README 未找到')
       return null
     } catch (error) {
       console.error('❌ GitHub README 提取失败:', error)
@@ -179,12 +181,15 @@ export class WebContentExtractor {
       let contentMarkdown = ''
       let title = ''
 
-      // GitHub 页面特殊处理
+      // GitHub 页面特殊处理：直接提取 README
       if (this.isGitHubProjectPage(url)) {
-        const githubReadme = this.extractGitHubReadme(doc)
-        if (githubReadme) {
-          contentMarkdown = githubReadme
-          console.log(`🐙 使用 GitHub README`)
+        console.log('🐙 GitHub 项目页面，直接提取 README...')
+        contentMarkdown = this.extractGitHubReadme(doc) || ''
+
+        if (contentMarkdown) {
+          console.log('✅ GitHub README 提取成功')
+        } else {
+          console.log('❌ GitHub README 提取失败，回退到 Readability.js')
         }
       }
 
@@ -216,6 +221,8 @@ export class WebContentExtractor {
       console.log('=== 抓取结果 ===')
       console.log('提取的标题:', title)
       console.log('URL:', url)
+      console.log('是否为 GitHub 页面:', this.isGitHubProjectPage(url))
+      console.log('使用方式:', this.isGitHubProjectPage(url) && contentMarkdown ? 'GitHub README 直接提取' : 'Readability.js')
       console.log('Markdown 内容长度:', contentMarkdown.length)
       console.log('Markdown 内容预览:', contentMarkdown.substring(0, 500) + (contentMarkdown.length > 500 ? '...' : ''))
       console.log('================')
