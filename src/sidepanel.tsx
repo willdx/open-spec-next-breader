@@ -17,6 +17,7 @@ function SidePanel() {
     clearAllDocuments,
     searchDocuments,
     addDocument,
+    updateLastReadTime,
   } = useDocumentStorage();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,10 +61,7 @@ function SidePanel() {
     setOpeningDocument(doc.id);
     try {
       // 更新最后阅读时间
-      await addDocument({
-        ...doc,
-        lastReadTime: Date.now()
-      });
+      await updateLastReadTime(doc.id);
 
       // 打开阅读模式
       const success = await openReadingMode(
