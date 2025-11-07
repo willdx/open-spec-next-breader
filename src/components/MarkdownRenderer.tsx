@@ -18,8 +18,8 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
   return (
     <div className="prose prose-gray max-w-none overflow-hidden
-                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:text-sm prose-code:rounded prose-code:font-mono
-                    prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-lg prose-pre:p-6 prose-pre:shadow-xl
+                    prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:rounded prose-code:font-mono prose-code:text-gray-800
+                    prose-pre:bg-gray-50 prose-pre:rounded prose-pre:p-4 prose-pre:border prose-pre:border-gray-200 prose-pre:font-mono prose-pre:text-sm prose-pre:not-italic
                     prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic">
       <Markdown>{content}</Markdown>
     </div>
