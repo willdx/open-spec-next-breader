@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 阅读模式下禁用页面滚动 */
+.reading-overflow-hidden {
+  overflow: hidden !important;
+}

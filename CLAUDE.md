@@ -75,3 +75,106 @@ This project combines a Plasmo browser extension with a Next.js application:
 - 使用pnpm
 - 不需要测试，我手动测试
 - 使用Tailwind 3版本
+
+## 🎯 Tailwind CSS 核心原则与最佳实践
+
+### 基本原则
+
+**"优先使用 Tailwind，零硬编码样式"**
+
+### Plasmo + Tailwind 架构
+
+#### 1. 内容脚本样式处理
+
+```tsx
+// ✅ 正确：使用 data-text: 导入完整 Tailwind
+import cssText from "data-text:~style.css"
+
+export const getStyle = () => {
+  const style = document.createElement("style")
+  style.textContent = cssText.replaceAll(":root", ":host(plasmo-csui)")
+  return style
+}
+
+// ❌ 错误：硬编码样式
+export const getStyle = () => {
+  style.textContent = `.custom-class { padding: 5rem !important; }`
+}
+```
+
+#### 2. 样式定义优先级
+
+```tsx
+// 1. 优先使用 Tailwind 类
+<div className="p-6 bg-white prose max-w-none">
+
+// 2. getStyle() 只处理特殊情况（滚动条、Shadow DOM 适配等）
+export const getStyle = () => {
+  // 只处理 Tailwind 无法直接处理的样式
+}
+
+// 3. 避免重复定义
+// ❌ 不要同时用 Tailwind 类和硬编码样式
+```
+
+#### 3. 配置要求
+
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/contents/**/*.{js,ts,jsx,tsx,mdx}" // ✅ 必须包含内容脚本
+  ],
+  plugins: [require("@tailwindcss/typography")]
+}
+```
+
+#### 4. 组件样式规范
+
+```tsx
+// ✅ 正确：纯 Tailwind 类
+<div className="reading-content-area p-20 overflow-y-auto prose prose-gray">
+
+// ❌ 错误：混用内联样式
+<div className="reading-content-area" style={{ padding: '5rem' }}>
+
+// ❌ 错误：在 getStyle() 中硬编码 Tailwind 类
+style.textContent = `.p-20 { padding: 5rem !important; }`
+```
+
+### 常见问题解决
+
+#### 当 Tailwind 类不生效时：
+
+1. **检查 `tailwind.config.js` 的 content 配置**
+2. **运行 `pnpm build` 确认无错误**
+3. **确认没有在 `getStyle()` 中硬编码冲突样式**
+4. **验证内容脚本使用了 `data-text:` 导入**
+
+#### 调试方法：
+
+```bash
+# 检查构建后的 CSS 是否包含所需类
+find build/chrome-mv3-dev -name "*.css" -exec grep -l "padding.*5rem" {} \;
+
+# 验证构建
+pnpm build:plasmo
+```
+
+### 关键教训
+
+1. **实践胜过理论**：手动测试验证比假设分析重要
+2. **相信官方文档**：Plasmo 完全支持 Tailwind 集成
+3. **简单胜过复杂**：直接使用 Tailwind 类，不搞过度设计
+4. **统一风格**：确保项目中所有地方都使用相同的样式定义方式
+
+### 项目特定约定
+
+- **边距**：使用 Tailwind 类（`p-4`, `p-6`, `p-8`, `p-20`）
+- **滚动**：`overflow-y-auto overflow-x-hidden`
+- **响应式**：`md:prose-lg lg:prose-xl`
+- **深色模式**：`dark:prose-invert`
+- **代码块**：使用 `prose-code:*` 和 `prose-pre:*` 修饰符
+
+**记住：用 Tailwind 就坚持用 Tailwind，不要混用硬编码 CSS！**

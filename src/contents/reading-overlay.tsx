@@ -2,6 +2,7 @@
 
 import type { PlasmoCSConfig } from "plasmo"
 import { useEffect, useState } from "react"
+import cssText from "data-text:~style.css"
 
 import { Save, Edit3, Eye, X } from "lucide-react"
 
@@ -16,206 +17,11 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
-// 使用 Plasmo 的 getStyle API 来确保样式正确注入到 Shadow DOM
+// 使用 Plasmo 官方推荐的 data-text: 导入方式
 export const getStyle = () => {
   const style = document.createElement("style")
-  style.textContent = `
-    /* 基础样式 - 完全充满屏幕的全屏布局 */
-    .reading-overlay-container {
-      position: fixed !important;
-      inset: 0 !important;
-      z-index: 999999 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      display: flex !important;
-      flex-direction: column !important;
-      background: white !important;
-      overflow: hidden !important; /* 防止整个页面出现滚动条 */
-    }
-
-    .reading-content-wrapper {
-      flex: 1 !important;
-      width: 100% !important;
-      height: 100% !important;
-      display: flex !important;
-      align-items: stretch !important;
-      justify-content: stretch !important;
-      overflow: hidden !important; /* 防止wrapper出现滚动条 */
-    }
-
-    .reading-content-box {
-      width: 100% !important;
-      height: 100% !important;
-      background: white !important;
-      border: none !important;
-      border-radius: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      overflow: hidden !important; /* 防止box出现滚动条 */
-    }
-
-    /* 双列布局样式 - 支持动态列宽，充满屏幕 */
-    .reading-two-column-layout {
-      display: grid !important;
-      grid-template-columns: 40% 6px 1fr !important; /* 左侧40% + 分割线6px + 右侧剩余空间 */
-      gap: 0 !important;
-      height: 100% !important;
-      min-height: 0 !important; /* 允许子元素收缩 */
-      padding: 0 !important;
-      overflow: hidden !important; /* 防止网格布局出现滚动条 */
-    }
-
-    /* 左侧思维导图面板 */
-    .mindmap-panel {
-      background: #f8fafc !important;
-      border: 1px solid #e5e7eb !important;
-      overflow: hidden !important;
-      display: flex !important;
-      flex-direction: column !important;
-      padding: 0 !important;
-    }
-
-    .mindmap-content {
-      flex: 1 !important;
-      overflow: hidden !important;
-      background: #f8fafc !important;
-    }
-
-    /* 右侧内容面板 */
-    .content-panel {
-      overflow: hidden !important;
-      background: white !important;
-      border: 1px solid #e5e7eb !important;
-      display: flex !important;
-      flex-direction: column !important;
-    }
-
-    /* 分割线 */
-    .column-divider {
-      width: 1px !important;
-      background: #e5e7eb !important;
-      align-self: stretch !important;
-    }
-
-    .reading-toolbar {
-      padding: 1rem 1.5rem !important;
-      border-bottom: 1px solid #e5e7eb !important;
-      background: #f9fafb !important;
-    }
-
-    .reading-content-area {
-      flex: 1 !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important; /* 防止水平滚动条 */
-      padding: 1.5rem !important;
-      font-family: ui-sans-serif, system-ui, sans-serif !important;
-      line-height: 1.6 !important;
-      color: #1f2937 !important;
-      /* 优化滚动条样式 */
-      scrollbar-width: thin;
-      scrollbar-color: #e5e7eb transparent;
-    }
-
-    /* Webkit 滚动条样式优化 */
-    .reading-content-area::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .reading-content-area::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .reading-content-area::-webkit-scrollbar-thumb {
-      background-color: #e5e7eb;
-      border-radius: 3px;
-      transition: background-color 0.2s ease;
-    }
-
-    .reading-content-area::-webkit-scrollbar-thumb:hover {
-      background-color: #d1d5db;
-    }
-
-    /* Textarea 滚动条样式 */
-    .reading-content-area textarea::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .reading-content-area textarea::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .reading-content-area textarea::-webkit-scrollbar-thumb {
-      background-color: #e5e7eb;
-      border-radius: 3px;
-      transition: background-color 0.2s ease;
-    }
-
-    .reading-content-area textarea::-webkit-scrollbar-thumb:hover {
-      background-color: #d1d5db;
-    }
-
-    .reading-content-area h1 {
-      font-size: 2rem !important;
-      font-weight: bold !important;
-      margin-bottom: 1rem !important;
-      color: #111827 !important;
-    }
-
-    .reading-content-area h2 {
-      font-size: 1.5rem !important;
-      font-weight: bold !important;
-      margin-bottom: 0.75rem !important;
-      margin-top: 2rem !important;
-      color: #111827 !important;
-    }
-
-    .reading-content-area p {
-      margin-bottom: 1rem !important;
-    }
-
-    .reading-decoration-line {
-      height: 0.25rem !important;
-      background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899) !important;
-    }
-
-    
-    /* 响应式设计 - 小屏幕切换为单列布局 */
-    @media (max-width: 1200px) {
-      .reading-two-column-layout {
-        grid-template-columns: 1fr !important;
-      }
-
-      .mindmap-panel {
-        display: none !important;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .reading-content-wrapper {
-      }
-
-      .reading-two-column-layout {
-        padding: 0.5rem !important;
-      }
-
-      .reading-toolbar {
-        padding: 0.75rem 1rem !important;
-      }
-
-      .reading-decoration-line {
-        display: none !important;
-      }
-    }
-
-    /* 大屏幕优化 */
-    @media (min-width: 1600px) {
-      .reading-content-wrapper {
-      }
-
-      .reading-two-column-layout {
-      }
-    }
-  `
+  // 适配 Shadow DOM 环境，将 :root 替换为 :host(plasmo-csui)
+  style.textContent = cssText.replaceAll(':root', ':host(plasmo-csui)')
   return style
 }
 
@@ -274,6 +80,60 @@ export default function ReadingOverlayContent() {
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage)
       document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isVisible])
+
+  // 禁用页面滚动 - 直接操作主页面DOM
+  useEffect(() => {
+    // 获取主页面（非Shadow DOM）的HTML和Body元素
+    const hostDocument = document
+    const hostBody = hostDocument.body
+    const hostHtml = hostDocument.documentElement
+
+    if (isVisible) {
+      // 保存原始样式
+      const originalBodyOverflow = hostBody.style.overflow
+      const originalHtmlOverflow = hostHtml.style.overflow
+
+      // 强制禁用滚动
+      hostBody.style.setProperty('overflow', 'hidden', 'important')
+      hostHtml.style.setProperty('overflow', 'hidden', 'important')
+
+      // 保存原始样式以便恢复
+      hostBody.dataset.originalOverflow = originalBodyOverflow
+      hostHtml.dataset.originalOverflow = originalHtmlOverflow
+    } else {
+      // 恢复原始样式
+      if (hostBody.dataset.originalOverflow !== undefined) {
+        hostBody.style.overflow = hostBody.dataset.originalOverflow
+        delete hostBody.dataset.originalOverflow
+      } else {
+        hostBody.style.removeProperty('overflow')
+      }
+
+      if (hostHtml.dataset.originalOverflow !== undefined) {
+        hostHtml.style.overflow = hostHtml.dataset.originalOverflow
+        delete hostHtml.dataset.originalOverflow
+      } else {
+        hostHtml.style.removeProperty('overflow')
+      }
+    }
+
+    return () => {
+      // 清理函数：确保恢复原始样式
+      if (hostBody.dataset.originalOverflow !== undefined) {
+        hostBody.style.overflow = hostBody.dataset.originalOverflow
+        delete hostBody.dataset.originalOverflow
+      } else {
+        hostBody.style.removeProperty('overflow')
+      }
+
+      if (hostHtml.dataset.originalOverflow !== undefined) {
+        hostHtml.style.overflow = hostHtml.dataset.originalOverflow
+        delete hostHtml.dataset.originalOverflow
+      } else {
+        hostHtml.style.removeProperty('overflow')
+      }
     }
   }, [isVisible])
 
@@ -348,10 +208,10 @@ export default function ReadingOverlayContent() {
   }
 
   return (
-    <div className="reading-overlay-container" onClick={handleClose}>
+    <div className="reading-overlay-container fixed inset-0 z-[999999] w-screen h-screen flex flex-col bg-white overflow-hidden" onClick={handleClose}>
       {/* 内容层 - 点击事件不冒泡到外层 */}
-      <div className="reading-content-wrapper" onClick={(e) => e.stopPropagation()}>
-        <div className="reading-content-box">
+      <div className="reading-content-wrapper flex-1 w-full h-full flex items-stretch justify-stretch overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="reading-content-box w-full h-full bg-white border-none rounded-none flex flex-col overflow-hidden">
           {/* 左上角关闭按钮 */}
           <button
             onClick={handleClose}
@@ -461,29 +321,20 @@ export default function ReadingOverlayContent() {
 
           {/* 双列布局内容区域 */}
           <div
-            className="reading-two-column-layout"
+            className="reading-two-column-layout grid h-full min-h-0 p-0 overflow-hidden"
             style={{
               gridTemplateColumns: `${leftPanelWidth}% 6px 1fr`
             }}>
             {/* 左侧面板 - 思维导图区域（暂时显示占位提示） */}
-            <div className="mindmap-panel">
+            <div className="mindmap-panel bg-slate-50 border border-gray-200 overflow-hidden flex flex-col p-0">
               <div
-                className="mindmap-content"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  color: "#9ca3af",
-                  fontSize: "0.875rem",
-                  textAlign: "center"
-                }}>
+                className="mindmap-content flex-1 overflow-hidden bg-slate-50 flex items-center justify-center h-full text-gray-400 text-sm text-center">
                 <div>
-                  <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+                  <div className="text-5xl mb-4">
                     🗺️
                   </div>
                   <div>思维导图功能</div>
-                  <div style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
+                  <div className="text-xs mt-2">
                     即将上线...
                   </div>
                 </div>
@@ -498,32 +349,22 @@ export default function ReadingOverlayContent() {
             />
 
             {/* 右侧面板 - 内容区域 */}
-            <div className="content-panel">
-              <div className="reading-content-area">
-                {isEditMode ? (
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      border: "none",
-                      outline: "none",
-                      resize: "none",
-                      fontFamily: "ui-sans-serif, system-ui, sans-serif",
-                      lineHeight: 1.6,
-                      fontSize: "1rem",
-                      background: "transparent",
-                      overflowY: "auto",
-                      overflowX: "hidden",
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#e5e7eb transparent"
-                    }}
-                    placeholder="在这里输入内容..."
-                  />
-                ) : (
-                  <MarkdownRenderer content={readingData.content} />
-                )}
+            <div className="content-panel overflow-hidden bg-white border border-gray-200 flex flex-col">
+              <div className="reading-content-area flex-1 p-20 overflow-hidden">
+                {/* 内层滚动容器 */}
+                <div className="overflow-y-auto overflow-x-hidden h-full">
+                  {isEditMode ? (
+                    <textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      className="w-full h-full border-none outline-none resize-none font-sans leading-relaxed text-lg bg-transparent"
+                      placeholder="在这里输入内容..."
+                      style={{ overflow: 'hidden' }}
+                    />
+                  ) : (
+                    <MarkdownRenderer content={readingData.content} />
+                  )}
+                </div>
               </div>
             </div>
           </div>
