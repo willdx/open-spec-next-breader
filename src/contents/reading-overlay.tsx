@@ -350,14 +350,27 @@ export default function ReadingOverlayContent() {
 
             {/* 右侧面板 - 内容区域 */}
             <div className="content-panel overflow-hidden bg-white border border-gray-200 flex flex-col">
-              <div className="reading-content-area flex-1 p-20 overflow-hidden">
-                {/* 内层滚动容器 */}
-                <div className="overflow-y-auto overflow-x-hidden h-full">
+              {/* 滚动容器占据整个可用高度，贴边滚动条 */}
+              <div className="overflow-y-auto overflow-x-hidden h-full">
+                <div className="reading-content-area p-20">
                   {isEditMode ? (
                     <textarea
+                      ref={(el) => {
+                        if (el && content) {
+                          // 动态调整高度以适应内容
+                          el.style.height = 'auto';
+                          el.style.height = el.scrollHeight + 'px';
+                        }
+                      }}
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      className="w-full h-full border-none outline-none resize-none font-sans leading-relaxed text-lg bg-transparent"
+                      onChange={(e) => {
+                        setContent(e.target.value);
+                        // 输入时动态调整高度
+                        const target = e.target;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                      className="w-full border-none outline-none resize-none font-sans leading-relaxed text-lg bg-transparent"
                       placeholder="在这里输入内容..."
                       style={{ overflow: 'hidden' }}
                     />
